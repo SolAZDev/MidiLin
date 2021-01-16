@@ -10,7 +10,7 @@
 #include <EEPROM.h>
 #include <Wire.h>
 #include <Adafruit_NeoPixel.h>
-#include <QuickStats.h>
+//#include <QuickStats.h>
 #ifdef __AVR__
   #include <avr/power.h>
 #endif
@@ -22,10 +22,10 @@
 #define TRANSPOSE_DOWN 2  //D2
 #define VOLUME    A8      //Master volume
 #define MODAL     A1      //Switch between the 7 musical modes
-#define S0        A2      //String 0
-#define M0        A3      //Modulation 0
-#define S1        A4      //String 1
-#define M1        A5      //Modulation 1
+#define S0        A7      //String 0
+#define M0        A8      //Modulation 0
+#define S1        A9      //String 1
+#define M1        A10    //Modulation 1
 
 /*Here for legacy*/
 #define T0        A0
@@ -33,8 +33,8 @@
 #define T2        A0
 #define T3        A0
 
-#define JSX       A7
-#define JSY       A6
+#define JSX       A11
+#define JSY       A12
 
 //#define JSSEL     7
 
@@ -132,7 +132,7 @@ int stickZeroY;
 
 unsigned long last_read;
 
-QuickStats stats;
+//QuickStats stats;
 
 void setup() {
   //read fret definitions from EEPROM
@@ -646,4 +646,3 @@ void PitchWheelChange(int value) {
   Serial.write(high);
   Serial.flush();
 }
-

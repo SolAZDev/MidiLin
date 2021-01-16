@@ -1,0 +1,1 @@
+{"type": "library", "name": "cores", "version": "0.0.0+20210115043253.sha.68036bd", "spec": {"owner": null, "id": null, "name": "cores", "requirements": null, "url": "git+https://github.com/PaulStoffregen/cores.git#1.35"}}
