@@ -6,26 +6,71 @@
 #include <Bounce.h>
 #include <QuickStats.h>
 
-// Study up MIDI you lil noob
+// Study up MIDI you lil noob - Sol2Sol
 #pragma region Config
-#define TRANSPOSE_UP 4   //D4
-#define TRANSPOSE_DOWN 2 //D2
-#define ClearNoteBtn 3
+#define Calibrate true
+#define UsingAudioBoard false
+#define TeensyVersion 3
 
+#pragma region Teensy3NoAudio
+#if TeensyVersion == 3 && UsingAudioBoard == false
+#define VOLUME A1
+#define MODAL A0
+#define Str0 A2
+#define Mod0 A3
+#define Str1 A4
+#define Mod1 A5
+#define JSX A6
+#define JSY A7
+#define JSBtn
+#endif
+#pragma endregion
+
+#pragma region Teensy3AudioAudioBoard
+#else if TeensyVersion == 3 && UsingAudioBoard == true
 #define VOLUME A1
 #define MODAL A18
 #define Str0 A2
 #define Mod0 A3
 #define Str1 A6
 #define Mod1 A7
-
 #define JSX A11
 #define JSY A10
 #define JSBtn 0
+#endif
+#pragma endregion
 
-#define VolCC 64
+#pragma region Teensy4NoBoard
+#if TeesnyVersion == 4 && UsingAudioBoard == false
+#define VOLUME A1
+#define MODAL AREF
+#define Str0 A2
+#define Mod0 A3
+#define Str1 A6
+#define Mod1 A7
+#define JSX A8
+#define JSY A9
+#define JSBtn 0
+#endif
+#pragma endregion
+
+#pragma region Teensy4AudioBoard
+#if TeesnyVersion == 4 && UsingAudioBoard == true
+#define VOLUME A1
+#define MODAL A8
+#define Str0 A2
+#define Mod0 A3
+#define Str1 A10
+#define Mod1 A11
+#define JSX A12
+#define JSY A13
+#define JSBtn 0
+#endif
+#pragma endregion
+
+#define VolCC 7
 #define ModCC 1
-#define MIDI_CHANNEL 1
+#define MIDI_CHANNEL 0
 #define VolcaVolCC 11
 #define VolcaModCC 46
 #define VolcaMidiChannel 10 //So, Volca's Drums?
@@ -36,7 +81,6 @@
 #define S_PAD 3
 #define T_PAD 300
 
-#define Calibrate true
 #define MOD_THRESHOLD 30 //Modulation is not send under this value
 
 //Legacy shets, we'll figure out what they do later.
@@ -44,6 +88,10 @@
 #define T1 A0
 #define T2 A0
 #define T3 A0
+
+#define TRANSPOSE_UP 4   //D4
+#define TRANSPOSE_DOWN 2 //D2
+#define ClearNoteBtn 3
 
 #define THRESH 600
 #define N_STR 2
@@ -388,7 +436,7 @@ void legatoTest()
     int note = fretTouched[i] + offsets[i];
     if (note != S_active[i] && fretTouched[i] == -1)
     {
-      noteOff(0x80 + channel, S_active[i]);
+      noteOff(S_active[i], channel);
       S_active[i] = note;
       continue;
     }
