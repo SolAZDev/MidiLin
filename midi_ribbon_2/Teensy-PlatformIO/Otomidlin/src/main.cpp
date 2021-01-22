@@ -8,8 +8,8 @@
 
 // Study up MIDI you lil noob - Sol2Sol
 #pragma region Config
-#define Calibrate true
-#define UsingAudioBoard false
+#define Calibrate false
+#define UsingAudioBoard true
 #define TeensyVersion 3
 
 #pragma region Teensy3NoAudio
@@ -22,14 +22,14 @@
 #define Mod1 A5
 #define JSX A6
 #define JSY A7
-#define JSBtn
+#define JSBtn 0
 #endif
 #pragma endregion
 
 #pragma region Teensy3AudioAudioBoard
-#else if TeensyVersion == 3 && UsingAudioBoard == true
+#if TeensyVersion == 3 && UsingAudioBoard == true
 #define VOLUME A1
-#define MODAL A18
+#define MODAL A14
 #define Str0 A2
 #define Mod0 A3
 #define Str1 A6
@@ -68,6 +68,7 @@
 #endif
 #pragma endregion
 
+#pragma region Midilin Config
 #define VolCC 7
 #define ModCC 1
 #define MIDI_CHANNEL 0
@@ -98,6 +99,12 @@
 #define N_FRET 25
 #define S_PAD 3
 #define T_PAD 300
+
+#pragma endregion
+
+#pragma region Audio
+
+#pragma endregion
 
 #pragma endregion
 
