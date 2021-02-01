@@ -1,20 +1,21 @@
 #include <Arduino.h>
 #include <EEPROM.h>
-// #include <Audio.h>
+#include <Audio.h>
 #include <Wire.h>
 #include <SPI.h>
 #include <SD.h>
-// #include <MIDIcontroller.h>
+#include <MIDIcontroller.h>
 #include <MIDI.h>
 #include <Bounce.h>
 #include <QuickStats.h>
 
 // Study up MIDI you lil noob - Sol2Sol
 #pragma region Config
-#define Calibrate true
+#define Calibrate false
 #define UsingAudioBoard true
-#define TeensyVersion 41
+#define TeensyVersion 3
 
+#pragma region Teensy3NoAudio
 #if TeensyVersion == 3 && UsingAudioBoard == false
 #define VOLUME A1
 #define MODAL A0
@@ -25,11 +26,10 @@
 #define JSX A6
 #define JSY A7
 #define JSBtn 0
-#define TRANSPOSE_UP 4   //D4
-#define TRANSPOSE_DOWN 2 //D2
-#define ClearNoteBtn 3
 #endif
+#pragma endregion
 
+#pragma region Teensy3AudioAudioBoard
 #if TeensyVersion == 3 && UsingAudioBoard == true
 #define VOLUME A1
 #define MODAL A14
@@ -40,11 +40,10 @@
 #define JSX A11
 #define JSY A10
 #define JSBtn 0
-#define TRANSPOSE_UP 4   //D4
-#define TRANSPOSE_DOWN 2 //D2
-#define ClearNoteBtn 3
 #endif
+#pragma endregion
 
+#pragma region Teensy4NoBoard
 #if TeesnyVersion == 4 && UsingAudioBoard == false
 #define VOLUME A1
 #define MODAL AREF
@@ -55,11 +54,10 @@
 #define JSX A8
 #define JSY A9
 #define JSBtn 0
-#define TRANSPOSE_UP 4   //D4
-#define TRANSPOSE_DOWN 2 //D2
-#define ClearNoteBtn 3
 #endif
+#pragma endregion
 
+#pragma region Teensy4AudioBoard
 #if TeesnyVersion == 4 && UsingAudioBoard == true
 #define VOLUME A1
 #define MODAL A8
@@ -70,25 +68,8 @@
 #define JSX A12
 #define JSY A13
 #define JSBtn 0
-#define TRANSPOSE_UP 4
-#define TRANSPOSE_DOWN 2
-#define ClearNoteBtn 3
 #endif
-
-// #if TeesnyVersion == 41 && UsingAudioBoard == true
-#define VOLUME A1
-#define MODAL A0
-#define Str0 A17
-#define Mod0 A16
-#define Str1 A15
-#define Mod1 A14
-#define JSX A10
-#define JSY A11
-#define JSBtn 28
-#define TRANSPOSE_UP 37   //D4
-#define TRANSPOSE_DOWN 36 //D2
-#define ClearNoteBtn 35
-// #endif
+#pragma endregion
 
 #pragma region Midilin Config
 #define VolCC 7
@@ -112,6 +93,10 @@
 #define T2 A0
 #define T3 A0
 
+#define TRANSPOSE_UP 4   //D4
+#define TRANSPOSE_DOWN 2 //D2
+#define ClearNoteBtn 3
+
 #define THRESH 600
 #define N_STR 2
 #define N_FRET 25
@@ -121,22 +106,22 @@
 #pragma endregion
 
 #pragma region Audio
-// // GUItool: begin automatically generated code
-// AudioSynthWaveform waveform1; //xy=386,281
-// AudioPlaySdRaw playSdRaw1;    //xy=389,316
-// AudioMixer4 mixer1;           //xy=637,303
-// AudioConnection patchCord1(waveform1, 0, mixer1, 0);
-// AudioConnection patchCord2(playSdRaw1, 0, mixer1, 1);
-// #if UsingAudioBoard == true
-// AudioOutputI2S i2s1;             //xy=843,281
-// AudioControlSGTL5000 sgtl5000_1; //xy=839,366
-// AudioConnection patchCord3(mixer1, 0, i2s1, 0);
-// AudioConnection patchCord4(mixer1, 0, i2s1, 1);
-// #endif
-// #if UsingAudioBoard == false
-// AudioOutputAnalog dac1; //xy=844,324
-// AudioConnection patchCord5(mixer1, dac1);
-// #endif
+// GUItool: begin automatically generated code
+AudioSynthWaveform waveform1; //xy=386,281
+AudioPlaySdRaw playSdRaw1;    //xy=389,316
+AudioMixer4 mixer1;           //xy=637,303
+AudioConnection patchCord1(waveform1, 0, mixer1, 0);
+AudioConnection patchCord2(playSdRaw1, 0, mixer1, 1);
+#if UsingAudioBoard == true
+AudioOutputI2S i2s1;             //xy=843,281
+AudioControlSGTL5000 sgtl5000_1; //xy=839,366
+AudioConnection patchCord3(mixer1, 0, i2s1, 0);
+AudioConnection patchCord4(mixer1, 0, i2s1, 1);
+#endif
+#if UsingAudioBoard == false
+AudioOutputAnalog dac1; //xy=844,324
+AudioConnection patchCord5(mixer1, dac1);
+#endif
 // GUItool: end automatically generated code
 
 #pragma endregion
@@ -521,13 +506,9 @@ void calibrate()
         int response = false;
         Serial.println("Waiting A");
         while (!response)
-          digitalWrite(LED_BUILTIN, HIGH);
         {
-          // if (checkTriggered(i))
-          if (digitalRead(JSBtn) == HIGH)
+          if (checkTriggered(i))
           {
-            digitalWrite(LED_BUILTIN, LOW);
-            T_active[i] = true;
             val = (analogRead(S_pins[i]));
             response = true;
             int addr = j * sizeof(short) + (N_FRET * i * sizeof(short)); //What the fuck?
@@ -537,7 +518,6 @@ void calibrate()
             Serial.print(addr);
             EEPROMWriteShort(addr, val);
           }
-          digitalWrite(LED_BUILTIN, LOW);
           delay(10);
         }
         delay(100);
@@ -566,7 +546,6 @@ void setup()
   }
 
 #pragma region ConfigurePins
-  pinMode(LED_BUILTIN, OUTPUT);
   for (int i = 0; i < N_STR; i++)
   {
     pinMode(T_pins[i], INPUT);
@@ -574,7 +553,6 @@ void setup()
   }
   pinMode(JSX, INPUT);
   pinMode(JSY, INPUT);
-  pinMode(JSBtn, INPUT);
 
   pinMode(TRANSPOSE_UP, INPUT_PULLUP);
   pinMode(TRANSPOSE_DOWN, INPUT_PULLUP);
