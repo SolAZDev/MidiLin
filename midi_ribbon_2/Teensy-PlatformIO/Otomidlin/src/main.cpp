@@ -12,10 +12,17 @@
 // Study up MIDI you lil noob - Sol2Sol
 #pragma region Config
 #define Calibrate true
-#define UsingAudioBoard true
-#define TeensyVersion 41
+/*
+ **** Config Numbers ******
+ 0 - Teensy 3.2 
+ 1 - Teensy 3.2 Audio
+ 2 - Teensy 4
+ 3 - Teensy 4 Audio -- Incomplete
+ 4 - Teensy 4.1 Audio
+*/
+#define ConfigNumber 4
 
-#if TeensyVersion == 3 && UsingAudioBoard == false
+#if ConfigNumber 0
 #define VOLUME A1
 #define MODAL A0
 #define Str0 A2
@@ -30,7 +37,7 @@
 #define ClearNoteBtn 3
 #endif
 
-#if TeensyVersion == 3 && UsingAudioBoard == true
+#if ConfigNumber 2
 #define VOLUME A1
 #define MODAL A14
 #define Str0 A2
@@ -45,7 +52,7 @@
 #define ClearNoteBtn 3
 #endif
 
-#if TeesnyVersion == 4 && UsingAudioBoard == false
+#if ConfigNumber 2
 #define VOLUME A1
 #define MODAL AREF
 #define Str0 A2
@@ -60,7 +67,7 @@
 #define ClearNoteBtn 3
 #endif
 
-#if TeesnyVersion == 4 && UsingAudioBoard == true
+#if ConfigNumber 3
 #define VOLUME A1
 #define MODAL A8
 #define Str0 A2
@@ -75,20 +82,20 @@
 #define ClearNoteBtn 3
 #endif
 
-// #if TeesnyVersion == 41 && UsingAudioBoard == true
+#if ConfigNumber 4
 #define VOLUME A1
 #define MODAL A0
-#define Str0 A17
-#define Mod0 A16
-#define Str1 A15
-#define Mod1 A14
-#define JSX A10
-#define JSY A11
-#define JSBtn 28
-#define TRANSPOSE_UP 37   //D4
-#define TRANSPOSE_DOWN 36 //D2
-#define ClearNoteBtn 35
-// #endif
+#define Str0 A10
+#define Mod0 A11
+#define Str1 A12
+#define Mod1 A13
+#define JSX A17
+#define JSY A16
+#define JSBtn 36
+#define TRANSPOSE_UP 35
+#define TRANSPOSE_DOWN 34
+#define ClearNoteBtn 33
+#endif
 
 #pragma region Midilin Config
 #define VolCC 7
@@ -99,7 +106,7 @@
 #define VolcaMidiChannel 10 //So, Volca's Drums?
 #define MuteCC 123
 
-#define N_STR 2
+#define N_STR 1
 #define N_FRET 25
 #define S_PAD 3
 #define T_PAD 300
@@ -113,7 +120,7 @@
 #define T3 A0
 
 #define THRESH 600
-#define N_STR 2
+#define N_STR 1
 #define N_FRET 25
 #define S_PAD 3
 #define T_PAD 300
@@ -174,7 +181,8 @@ int T_pins[] = {T0, T1, T2, T3};
 short S_vals[N_STR]; //current sensor values
 short S_old[N_STR];  //old sensor values for comparison
 int S_active[N_STR]; //currently active notes
-int S_pins[] = {Str0, Str1};
+// int S_pins[] = {Str0, Str1};
+int S_pins[] = {Str0};
 int fretTouched[N_STR];
 
 //E A D G
@@ -275,18 +283,21 @@ void controllerChange(int ctr, int val)
 
 #pragma region Input
 short checkTriggered(int i)
-{ //checkTumblr'd
+{
+  // Serial.print(" Valie of fret :");
   short v = analogRead(T_pins[i]);
+  // Serial.print(v);
   short ret = 0;
-  if (!T_active[i] && v > THRESH)
+  if (!T_active[i] && v > THRESH / 2)
   {
     T_active[i] = true;
     ret = v;
   }
-  else if (T_active[i] && v < THRESH - T_PAD)
-  {
-    T_active[i] = false;
-  }
+  // else if (T_active[i] && v < THRESH / 2 - T_PAD / 2)
+  // {
+  //   T_active[i] = false;
+
+  // }
   return ret;
 }
 
@@ -506,6 +517,7 @@ void CleanUp()
 }
 void calibrate()
 {
+  Serial.println("Calibration Start");
   if (1)
   {
     for (int i = 0; i < N_STR; i++)
@@ -523,8 +535,8 @@ void calibrate()
         while (!response)
           digitalWrite(LED_BUILTIN, HIGH);
         {
-          // if (checkTriggered(i))
-          if (digitalRead(JSBtn) == HIGH)
+          if (checkTriggered(i))
+          // if (digitalRead(JSBtn) == HIGH)
           {
             digitalWrite(LED_BUILTIN, LOW);
             T_active[i] = true;
@@ -588,7 +600,7 @@ void setup()
   {
     Serial.begin(115200);
     Serial.print("Starting Calibration");
-    calibrate();
+    // calibrate();
   }
   else
   {
@@ -599,21 +611,33 @@ void setup()
   stickZeroX = analogRead(JSX);
   stickZeroY = analogRead(JSY);
   mod_init[0] = analogRead(Mod0);
-  mod_init[1] = analogRead(Mod1);
-  s_init[1] = analogRead(Str1);
+  // mod_init[1] = analogRead(Mod1);
+  // s_init[1] = analogRead(Str1);
   s_init[0] = analogRead(Str0);
 #pragma endregion
 }
 void loop()
 {
-  readJS();
-  readButtons();
-  readModAndVol();
-  readControls();
-  determineFrets();
-  legatoTest();
-  PickNotes();
-  CleanUp();
+  if (Calibrate)
+  {
+    // short ee = checkTriggered(0);
+    // if (ee > 0)
+    // {
+    //   Serial.println(ee);
+    // }
+    Serial.println(checkTriggered(0));
+  }
+  else
+  {
+    readJS();
+    readButtons();
+    readModAndVol();
+    readControls();
+    determineFrets();
+    legatoTest();
+    PickNotes();
+    CleanUp();
+  }
   delay(1);
 }
 #pragma endregion
